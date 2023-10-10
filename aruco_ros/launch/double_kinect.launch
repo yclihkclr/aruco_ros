@@ -1,0 +1,39 @@
+<launch>
+
+    <node pkg="tf" type="static_transform_publisher" name="baseframe_to_marker1frame"
+          args="-0.04, -0.14, -0.275, 0.5, 0.5, 0.5, 0.5 marker_base_frame base_link 100" />
+
+    <arg name="marker1Id"         default="26"/>
+    <arg name="marker2Id"         default="582"/>
+    <arg name="markerSize"        default="0.08"/>    <!-- in m -->
+    <arg name="eye"               default="left"/>
+    <arg name="dct_normalization" default="True" />
+    <arg name="dct_filter_size"   default="2" />
+    <arg name="marker1_frame"     default="marker_base_frame" />
+    <arg name="marker2_frame"     default="marker_bin_frame" />
+
+
+    <node pkg="aruco_ros" type="double" name="aruco_simple">    
+        <remap from="/camera_info" to="/rgb/camera_info" />
+        <remap from="/image" to="/rgb/image_raw" />
+        <param name="image_is_rectified" value="True"/>
+        <param name="marker_size" value="$(arg markerSize)"/>
+        <param name="marker_id1" value="$(arg marker1Id)"/>
+        <param name="marker_id2" value="$(arg marker2Id)"/>
+        <param name="normalizeImage" value="$(arg dct_normalization)"/>
+        <param name="dct_components_to_remove" value="$(arg dct_filter_size)"/>
+        <param name="parent_name" value="rgb_camera_link"/>
+        <param name="child_name1" value="$(arg marker1_frame)" />
+        <param name="child_name2" value="$(arg marker2_frame)" />
+    </node>
+
+
+    <param name="robot_description" textfile="$(find aruco_ros)/panda/urdf/panda_piab_single_cup.urdf"/>
+
+    <node name="robot_state_publisher_panda" pkg="robot_state_publisher" type="robot_state_publisher">
+        <remap from="joint_states" to="/franka_rt/ros_joint_state"/>
+    </node>
+
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find aruco_ros)/launch/result.rviz" />
+</launch>
+
